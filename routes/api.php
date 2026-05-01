@@ -9,6 +9,7 @@ use App\Http\Controllers\MisioneController;
 use App\Http\Controllers\NoticiaController;
 use App\Http\Controllers\PaginaInstitucionalController;
 use App\Http\Controllers\RecursoController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -26,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('recursos', RecursoController::class)->except(['index', 'show']);
         Route::apiResource('contactos', MensajeContactoController::class)->except(['store']);
         Route::apiResource('paginas', PaginaInstitucionalController::class)->except(['index', 'show']);
+        Route::post('/uploads/imagenes', [UploadController::class, 'store']);
     });
 });
 
