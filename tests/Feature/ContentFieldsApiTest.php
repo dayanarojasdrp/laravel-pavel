@@ -184,4 +184,119 @@ class ContentFieldsApiTest extends TestCase
             ->assertJsonPath('per_page', 50)
             ->assertJsonCount(50, 'data');
     }
+
+    public function test_ministerios_can_be_filtered_and_searched(): void
+    {
+        Ministerio::create([
+            'nombre' => 'Ministerio de Jovenes',
+            'slug' => 'ministerio-de-jovenes',
+            'descripcion' => 'Trabajo con estudiantes.',
+            'categoria' => 'Jovenes',
+            'activo' => true,
+        ]);
+
+        Ministerio::create([
+            'nombre' => 'Ministerio de Adultos',
+            'slug' => 'ministerio-de-adultos',
+            'descripcion' => 'Trabajo con familias.',
+            'categoria' => 'Familias',
+            'activo' => false,
+        ]);
+
+        $this->getJson('/api/ministerios?search=estudiantes&categoria=Jovenes&activo=true')
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.slug', 'ministerio-de-jovenes');
+    }
+
+    public function test_noticias_can_be_filtered_and_searched(): void
+    {
+        $ministerio = Ministerio::create(['nombre' => 'Misiones', 'slug' => 'misiones']);
+        $otherMinisterio = Ministerio::create(['nombre' => 'Jovenes', 'slug' => 'jovenes']);
+
+        Noticia::create([
+            'titulo' => 'Conferencia nacional',
+            'slug' => 'conferencia-nacional',
+            'resumen' => 'Evento principal del ano.',
+            'contenido' => 'Contenido completo.',
+            'estado' => 'publicado',
+            'destacada' => true,
+            'categoria' => 'Eventos',
+            'ministerio_id' => $ministerio->id,
+        ]);
+
+        Noticia::create([
+            'titulo' => 'Nota interna',
+            'slug' => 'nota-interna',
+            'contenido' => 'Contenido completo.',
+            'estado' => 'borrador',
+            'destacada' => false,
+            'categoria' => 'Noticias',
+            'ministerio_id' => $otherMinisterio->id,
+        ]);
+
+        $this->getJson("/api/noticias?q=principal&estado=publicado&destacada=true&categoria=Eventos&ministerio_id={$ministerio->id}")
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.slug', 'conferencia-nacional');
+    }
+
+    public function test_recursos_can_be_filtered_and_searched(): void
+    {
+        Recurso::create([
+            'nombre' => 'Guia para lideres',
+            'slug' => 'guia-para-lideres',
+            'informacion' => 'Material pastoral.',
+            'categoria' => 'Para ministros',
+            'tipo' => 'PDF',
+            'descargable' => true,
+            'destacado' => true,
+            'activo' => true,
+        ]);
+
+        Recurso::create([
+            'nombre' => 'Video para ninos',
+            'slug' => 'video-para-ninos',
+            'informacion' => 'Material infantil.',
+            'categoria' => 'Ninos',
+            'tipo' => 'Video',
+            'descargable' => false,
+            'destacado' => false,
+            'activo' => true,
+        ]);
+
+        $this->getJson('/api/recursos?search=pastoral&categoria=Para%20ministros&tipo=PDF&descargable=true&destacado=true&activo=true')
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.slug', 'guia-para-lideres');
+    }
+
+    public function test_ministerio_news_endpoint_accepts_filters(): void
+    {
+        $ministerio = Ministerio::create(['nombre' => 'Misiones', 'slug' => 'misiones']);
+
+        Noticia::create([
+            'titulo' => 'Reporte mensual',
+            'slug' => 'reporte-mensual',
+            'resumen' => 'Reporte publico.',
+            'contenido' => 'Contenido completo.',
+            'estado' => 'publicado',
+            'categoria' => 'Reportes',
+            'ministerio_id' => $ministerio->id,
+        ]);
+
+        Noticia::create([
+            'titulo' => 'Borrador mensual',
+            'slug' => 'borrador-mensual',
+            'contenido' => 'Contenido completo.',
+            'estado' => 'borrador',
+            'categoria' => 'Reportes',
+            'ministerio_id' => $ministerio->id,
+        ]);
+
+        $this->getJson('/api/ministerios/misiones/noticias?search=publico&estado=publicado')
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.slug', 'reporte-mensual');
+    }
 }

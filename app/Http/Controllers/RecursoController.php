@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recurso;
+use App\Support\AppliesListFilters;
 use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
 use App\Support\ResolvesPagination;
@@ -16,7 +17,16 @@ class RecursoController extends Controller
      */
     public function index(Request $request)
     {
-        return Recurso::query()
+        $query = Recurso::query();
+
+        AppliesListFilters::search($query, $request, ['nombre', 'slug', 'informacion', 'categoria', 'tipo']);
+        AppliesListFilters::exact($query, $request, 'categoria');
+        AppliesListFilters::exact($query, $request, 'tipo');
+        AppliesListFilters::boolean($query, $request, 'descargable');
+        AppliesListFilters::boolean($query, $request, 'destacado');
+        AppliesListFilters::boolean($query, $request, 'activo');
+
+        return $query
             ->orderBy('orden')
             ->orderBy('nombre')
             ->paginate(ResolvesPagination::perPage($request));

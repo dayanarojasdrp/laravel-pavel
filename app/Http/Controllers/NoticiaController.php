@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Ministerio;
 use App\Models\Noticia;
+use App\Support\AppliesListFilters;
 use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
 use App\Support\ResolvesPagination;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +16,11 @@ class NoticiaController extends Controller
 {
     public function index(Request $request)
     {
-        return Noticia::with('ministerio')
+        $query = Noticia::with('ministerio');
+
+        $this->applyFilters($query, $request);
+
+        return $query
             ->orderByDesc('publicado_en')
             ->orderByDesc('created_at')
             ->paginate(ResolvesPagination::perPage($request));
@@ -121,9 +127,22 @@ class NoticiaController extends Controller
     {
         $ministerio = FindsByIdOrSlug::firstOrFail(Ministerio::query(), $identifier);
 
-        return Noticia::where('ministerio_id', $ministerio->id)
+        $query = Noticia::where('ministerio_id', $ministerio->id);
+
+        $this->applyFilters($query, $request);
+
+        return $query
             ->orderByDesc('publicado_en')
             ->orderByDesc('created_at')
             ->paginate(ResolvesPagination::perPage($request));
+    }
+
+    private function applyFilters(Builder $query, Request $request): void
+    {
+        AppliesListFilters::search($query, $request, ['titulo', 'slug', 'resumen', 'contenido', 'autor', 'categoria']);
+        AppliesListFilters::exact($query, $request, 'categoria');
+        AppliesListFilters::exact($query, $request, 'estado');
+        AppliesListFilters::exact($query, $request, 'ministerio_id');
+        AppliesListFilters::boolean($query, $request, 'destacada');
     }
 }

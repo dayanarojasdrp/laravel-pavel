@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ministerio;
+use App\Support\AppliesListFilters;
 use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
 use App\Support\ResolvesPagination;
@@ -16,7 +17,13 @@ class MinisterioController extends Controller
      */
     public function index(Request $request)
     {
-        return Ministerio::query()
+        $query = Ministerio::query();
+
+        AppliesListFilters::search($query, $request, ['nombre', 'slug', 'descripcion', 'categoria']);
+        AppliesListFilters::exact($query, $request, 'categoria');
+        AppliesListFilters::boolean($query, $request, 'activo');
+
+        return $query
             ->orderBy('orden')
             ->orderBy('nombre')
             ->paginate(ResolvesPagination::perPage($request));
