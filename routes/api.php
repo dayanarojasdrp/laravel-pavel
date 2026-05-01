@@ -1,11 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\MisioneController;
-use App\Http\Controllers\RecursoController;
 use App\Http\Controllers\MinisterioController;
+use App\Http\Controllers\MisioneController;
 use App\Http\Controllers\NoticiaController;
+use App\Http\Controllers\RecursoController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 

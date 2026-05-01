@@ -24,7 +24,7 @@ class GeneratesUniqueSlugs
     private static function slugExists(string $modelClass, string $slug, ?int $ignoreId): bool
     {
         /** @var Model $model */
-        $model = new $modelClass();
+        $model = new $modelClass;
 
         return $modelClass::query()
             ->where('slug', $slug)

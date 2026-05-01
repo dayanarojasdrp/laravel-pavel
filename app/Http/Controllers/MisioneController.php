@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Misione;
+use App\Support\GeneratesUniqueSlugs;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class MisioneController extends Controller
 {
@@ -12,7 +14,7 @@ class MisioneController extends Controller
      */
     public function index()
     {
-         return Misione::all();
+        return Misione::all();
     }
 
     /**
@@ -30,9 +32,19 @@ class MisioneController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('misiones', 'slug')],
             'informacion' => 'required|string',
-    'imagen' => 'nullable|string', // puede ser URL o nombre de archivo
+            'imagen' => 'nullable|string|max:255',
+            'categoria' => 'nullable|string|max:255',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'nullable|boolean',
+            'url_externa' => 'nullable|url|max:255',
         ]);
+
+        $validated['slug'] = GeneratesUniqueSlugs::make(
+            Misione::class,
+            $validated['slug'] ?? $validated['nombre']
+        );
 
         return Misione::create($validated);
     }
@@ -60,11 +72,22 @@ class MisioneController extends Controller
     {
         $misione = Misione::findOrFail($id);
         $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'informacion' => 'required|string',
+            'nombre' => 'sometimes|required|string|max:255',
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('misiones', 'slug')->ignore($misione->id)],
+            'informacion' => 'sometimes|required|string',
+            'imagen' => 'nullable|string|max:255',
+            'categoria' => 'nullable|string|max:255',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'nullable|boolean',
+            'url_externa' => 'nullable|url|max:255',
         ]);
 
+        if (array_key_exists('slug', $validated)) {
+            $validated['slug'] = GeneratesUniqueSlugs::make(Misione::class, $validated['slug'], $misione->id);
+        }
+
         $misione->update($validated);
+
         return $misione;
     }
 
@@ -73,7 +96,8 @@ class MisioneController extends Controller
      */
     public function destroy($id)
     {
-         Misione::destroy($id);
+        Misione::destroy($id);
+
         return response()->json(['mensaje' => 'Misión eliminada']);
     }
 }

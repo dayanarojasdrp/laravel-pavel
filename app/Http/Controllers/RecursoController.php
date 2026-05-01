@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recurso;
-use App\Models\Ministerio;
+use App\Support\GeneratesUniqueSlugs;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RecursoController extends Controller
 {
@@ -29,22 +30,34 @@ class RecursoController extends Controller
      */
     public function store(Request $request)
     {
-      
-    // Validar los datos recibidos
-    $validated = $request->validate([
-        'nombre' => 'required|string|max:255',
-        'informacion' => 'required|string',
-        'imagen' => 'nullable|string', // puede ser URL o nombre de archivo
-    ]);
 
-    // Crear el recurso con los datos validados
-    $recurso = Recurso::create($validated);
+        // Validar los datos recibidos
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('recursos', 'slug')],
+            'informacion' => 'required|string',
+            'imagen' => 'nullable|string|max:255',
+            'categoria' => 'nullable|string|max:255',
+            'tipo' => 'nullable|string|max:255',
+            'archivo_url' => 'nullable|url|max:255',
+            'link' => 'nullable|url|max:255',
+            'descargable' => 'nullable|boolean',
+            'destacado' => 'nullable|boolean',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'nullable|boolean',
+        ]);
 
-    // Devolver el recurso creado
-    return response()->json($recurso, 201);
-}
+        $validated['slug'] = GeneratesUniqueSlugs::make(
+            Recurso::class,
+            $validated['slug'] ?? $validated['nombre']
+        );
 
-    
+        // Crear el recurso con los datos validados
+        $recurso = Recurso::create($validated);
+
+        // Devolver el recurso creado
+        return response()->json($recurso, 201);
+    }
 
     /**
      * Display the specified resource.
@@ -69,12 +82,26 @@ class RecursoController extends Controller
     {
         $recurso = Recurso::findOrFail($id);
         $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'informacion' => 'required|string',
-            'imagen' => 'nullable|string',
+            'nombre' => 'sometimes|required|string|max:255',
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('recursos', 'slug')->ignore($recurso->id)],
+            'informacion' => 'sometimes|required|string',
+            'imagen' => 'nullable|string|max:255',
+            'categoria' => 'nullable|string|max:255',
+            'tipo' => 'nullable|string|max:255',
+            'archivo_url' => 'nullable|url|max:255',
+            'link' => 'nullable|url|max:255',
+            'descargable' => 'nullable|boolean',
+            'destacado' => 'nullable|boolean',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'nullable|boolean',
         ]);
 
+        if (array_key_exists('slug', $validated)) {
+            $validated['slug'] = GeneratesUniqueSlugs::make(Recurso::class, $validated['slug'], $recurso->id);
+        }
+
         $recurso->update($validated);
+
         return $recurso;
     }
 
@@ -84,6 +111,7 @@ class RecursoController extends Controller
     public function destroy($id)
     {
         Recurso::destroy($id);
+
         return response()->json(['mensaje' => 'Recurso eliminado']);
     }
 }

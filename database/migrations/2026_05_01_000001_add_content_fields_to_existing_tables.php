@@ -2,7 +2,9 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
@@ -49,6 +51,11 @@ return new class extends Migration
             $table->unsignedInteger('orden')->default(0)->index()->after('destacado');
             $table->boolean('activo')->default(true)->index()->after('orden');
         });
+
+        $this->backfillSlugs('ministerios', 'nombre');
+        $this->backfillSlugs('noticias', 'titulo');
+        $this->backfillSlugs('misiones', 'nombre');
+        $this->backfillSlugs('recursos', 'nombre');
     }
 
     public function down(): void
@@ -102,5 +109,31 @@ return new class extends Migration
                 'url_externa',
             ]);
         });
+    }
+
+    private function backfillSlugs(string $table, string $sourceColumn): void
+    {
+        $usedSlugs = [];
+
+        DB::table($table)
+            ->select(['id', $sourceColumn])
+            ->orderBy('id')
+            ->get()
+            ->each(function ($record) use ($table, $sourceColumn, &$usedSlugs) {
+                $baseSlug = Str::slug($record->{$sourceColumn}) ?: 'item';
+                $slug = $baseSlug;
+                $counter = 2;
+
+                while (in_array($slug, $usedSlugs, true)) {
+                    $slug = "{$baseSlug}-{$counter}";
+                    $counter++;
+                }
+
+                $usedSlugs[] = $slug;
+
+                DB::table($table)
+                    ->where('id', $record->id)
+                    ->update(['slug' => $slug]);
+            });
     }
 };

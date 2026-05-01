@@ -6,7 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class Noticia extends Model
 {
-    protected $fillable = ['titulo', 'contenido', 'imagen', 'ministerio_id'];
+    protected $fillable = [
+        'titulo',
+        'slug',
+        'resumen',
+        'contenido',
+        'imagen',
+        'autor',
+        'publicado_en',
+        'estado',
+        'destacada',
+        'categoria',
+        'meta_title',
+        'meta_description',
+        'ministerio_id',
+    ];
+
+    protected $casts = [
+        'publicado_en' => 'datetime',
+        'destacada' => 'boolean',
+    ];
 
     public function ministerio()
     {

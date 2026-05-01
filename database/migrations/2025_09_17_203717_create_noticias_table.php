@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('noticias', function (Blueprint $table) {
-    $table->id();
-    $table->string('titulo');
-    $table->text('contenido');
-    $table->string('imagen')->nullable(); // URL o nombre de archivo
-    $table->foreignId('ministerio_id')->constrained()->onDelete('cascade');
-    $table->timestamps();
-});
+            $table->id();
+            $table->string('titulo');
+            $table->text('contenido');
+            $table->string('imagen')->nullable(); // URL o nombre de archivo
+            $table->foreignId('ministerio_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+        });
 
     }
 
