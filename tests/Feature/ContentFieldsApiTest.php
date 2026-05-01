@@ -155,4 +155,33 @@ class ContentFieldsApiTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(['slug' => 'reporte-de-misiones']);
     }
+
+    public function test_index_endpoints_are_paginated(): void
+    {
+        Ministerio::create(['nombre' => 'Uno', 'slug' => 'uno']);
+        Ministerio::create(['nombre' => 'Dos', 'slug' => 'dos']);
+        Ministerio::create(['nombre' => 'Tres', 'slug' => 'tres']);
+
+        $this->getJson('/api/ministerios?per_page=2&page=2')
+            ->assertOk()
+            ->assertJsonPath('current_page', 2)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('per_page', 2)
+            ->assertJsonPath('total', 3);
+    }
+
+    public function test_pagination_per_page_is_capped(): void
+    {
+        foreach (range(1, 55) as $number) {
+            Ministerio::create([
+                'nombre' => "Ministerio {$number}",
+                'slug' => "ministerio-{$number}",
+            ]);
+        }
+
+        $this->getJson('/api/ministerios?per_page=200')
+            ->assertOk()
+            ->assertJsonPath('per_page', 50)
+            ->assertJsonCount(50, 'data');
+    }
 }

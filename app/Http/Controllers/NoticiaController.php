@@ -6,14 +6,18 @@ use App\Models\Ministerio;
 use App\Models\Noticia;
 use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
+use App\Support\ResolvesPagination;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class NoticiaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Noticia::with('ministerio')->get();
+        return Noticia::with('ministerio')
+            ->orderByDesc('publicado_en')
+            ->orderByDesc('created_at')
+            ->paginate(ResolvesPagination::perPage($request));
     }
 
     /**
@@ -113,10 +117,13 @@ class NoticiaController extends Controller
         return response()->json(['mensaje' => 'Noticia eliminada']);
     }
 
-    public function porMinisterio($identifier)
+    public function porMinisterio(Request $request, $identifier)
     {
         $ministerio = FindsByIdOrSlug::firstOrFail(Ministerio::query(), $identifier);
 
-        return Noticia::where('ministerio_id', $ministerio->id)->get();
+        return Noticia::where('ministerio_id', $ministerio->id)
+            ->orderByDesc('publicado_en')
+            ->orderByDesc('created_at')
+            ->paginate(ResolvesPagination::perPage($request));
     }
 }

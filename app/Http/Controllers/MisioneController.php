@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Misione;
 use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
+use App\Support\ResolvesPagination;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,9 +14,12 @@ class MisioneController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Misione::all();
+        return Misione::query()
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->paginate(ResolvesPagination::perPage($request));
     }
 
     /**
