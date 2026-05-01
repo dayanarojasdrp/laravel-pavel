@@ -6,6 +6,7 @@ use App\Http\Controllers\MensajeContactoController;
 use App\Http\Controllers\MinisterioController;
 use App\Http\Controllers\MisioneController;
 use App\Http\Controllers\NoticiaController;
+use App\Http\Controllers\PaginaInstitucionalController;
 use App\Http\Controllers\RecursoController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('misiones', MisioneController::class)->except(['index', 'show']);
         Route::apiResource('recursos', RecursoController::class)->except(['index', 'show']);
         Route::apiResource('contactos', MensajeContactoController::class)->except(['store']);
+        Route::apiResource('paginas', PaginaInstitucionalController::class)->except(['index', 'show']);
     });
 });
 
@@ -31,4 +33,5 @@ Route::apiResource('eventos', EventoController::class)->only(['index', 'show']);
 Route::get('/ministerios/{id}/noticias', [NoticiaController::class, 'porMinisterio']);
 Route::apiResource('misiones', MisioneController::class)->only(['index', 'show']);
 Route::apiResource('recursos', RecursoController::class)->only(['index', 'show']);
+Route::apiResource('paginas', PaginaInstitucionalController::class)->only(['index', 'show']);
 Route::post('/contactos', [MensajeContactoController::class, 'store']);

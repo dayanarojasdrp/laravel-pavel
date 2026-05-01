@@ -94,6 +94,14 @@ class AuthApiTest extends TestCase
         ])->assertUnauthorized();
     }
 
+    public function test_public_pagina_writes_require_authentication(): void
+    {
+        $this->postJson('/api/paginas', [
+            'titulo' => 'Sobre nosotros',
+            'contenido' => 'Contenido institucional.',
+        ])->assertUnauthorized();
+    }
+
     public function test_logout_revokes_current_bearer_token(): void
     {
         $user = User::factory()->create(['role' => 'usuario']);
