@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recurso;
+use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -62,9 +63,9 @@ class RecursoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($identifier)
     {
-        return Recurso::findOrFail($id);
+        return FindsByIdOrSlug::firstOrFail(Recurso::query(), $identifier);
     }
 
     /**
@@ -96,7 +97,7 @@ class RecursoController extends Controller
             'activo' => 'nullable|boolean',
         ]);
 
-        if (array_key_exists('slug', $validated)) {
+        if (! empty($validated['slug'])) {
             $validated['slug'] = GeneratesUniqueSlugs::make(Recurso::class, $validated['slug'], $recurso->id);
         }
 

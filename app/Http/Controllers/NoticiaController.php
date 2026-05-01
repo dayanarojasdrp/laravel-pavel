@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ministerio;
 use App\Models\Noticia;
+use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -55,13 +57,9 @@ class NoticiaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($identifier)
     {
-        $noticia = Noticia::with('ministerio')->where('id', $id)->first();
-
-        if (! $noticia) {
-            return response()->json(['error' => 'Noticia no encontrada'], 404);
-        }
+        $noticia = FindsByIdOrSlug::firstOrFail(Noticia::with('ministerio'), $identifier);
 
         return $noticia;
     }
@@ -96,7 +94,7 @@ class NoticiaController extends Controller
             'ministerio_id' => 'sometimes|required|exists:ministerios,id',
         ]);
 
-        if (array_key_exists('slug', $validated)) {
+        if (! empty($validated['slug'])) {
             $validated['slug'] = GeneratesUniqueSlugs::make(Noticia::class, $validated['slug'], $noticia->id);
         }
 
@@ -115,8 +113,10 @@ class NoticiaController extends Controller
         return response()->json(['mensaje' => 'Noticia eliminada']);
     }
 
-    public function porMinisterio($id)
+    public function porMinisterio($identifier)
     {
-        return Noticia::where('ministerio_id', $id)->get();
+        $ministerio = FindsByIdOrSlug::firstOrFail(Ministerio::query(), $identifier);
+
+        return Noticia::where('ministerio_id', $ministerio->id)->get();
     }
 }

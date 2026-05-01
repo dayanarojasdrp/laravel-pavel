@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ministerio;
+use App\Support\FindsByIdOrSlug;
 use App\Support\GeneratesUniqueSlugs;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -52,9 +53,9 @@ class MinisterioController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($identifier)
     {
-        return Ministerio::findOrFail($id);
+        return FindsByIdOrSlug::firstOrFail(Ministerio::query(), $identifier);
     }
 
     /**
@@ -82,7 +83,7 @@ class MinisterioController extends Controller
             'url_externa' => 'nullable|url|max:255',
         ]);
 
-        if (array_key_exists('slug', $validated)) {
+        if (! empty($validated['slug'])) {
             $validated['slug'] = GeneratesUniqueSlugs::make(Ministerio::class, $validated['slug'], $ministerio->id);
         }
 

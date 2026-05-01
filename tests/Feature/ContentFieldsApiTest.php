@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Ministerio;
+use App\Models\Misione;
+use App\Models\Noticia;
+use App\Models\Recurso;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -89,5 +92,67 @@ class ContentFieldsApiTest extends TestCase
                 'descargable' => true,
                 'destacado' => true,
             ]);
+    }
+
+    public function test_content_can_be_read_by_slug(): void
+    {
+        $ministerio = Ministerio::create([
+            'nombre' => 'Ministerio de Jovenes',
+            'slug' => 'ministerio-de-jovenes',
+        ]);
+
+        $noticia = Noticia::create([
+            'titulo' => 'Nueva conferencia',
+            'slug' => 'nueva-conferencia',
+            'contenido' => 'Contenido completo.',
+            'ministerio_id' => $ministerio->id,
+        ]);
+
+        Misione::create([
+            'nombre' => 'Misiones Globales',
+            'slug' => 'misiones-globales',
+            'informacion' => 'Informacion de misiones.',
+        ]);
+
+        Recurso::create([
+            'nombre' => 'Guia para lideres',
+            'slug' => 'guia-para-lideres',
+            'informacion' => 'Material de apoyo.',
+        ]);
+
+        $this->getJson('/api/ministerios/ministerio-de-jovenes')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $ministerio->id]);
+
+        $this->getJson('/api/noticias/nueva-conferencia')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $noticia->id]);
+
+        $this->getJson('/api/misiones/misiones-globales')
+            ->assertOk()
+            ->assertJsonFragment(['slug' => 'misiones-globales']);
+
+        $this->getJson('/api/recursos/guia-para-lideres')
+            ->assertOk()
+            ->assertJsonFragment(['slug' => 'guia-para-lideres']);
+    }
+
+    public function test_ministerio_news_can_be_read_by_ministerio_slug(): void
+    {
+        $ministerio = Ministerio::create([
+            'nombre' => 'Misiones',
+            'slug' => 'misiones',
+        ]);
+
+        Noticia::create([
+            'titulo' => 'Reporte de misiones',
+            'slug' => 'reporte-de-misiones',
+            'contenido' => 'Contenido completo.',
+            'ministerio_id' => $ministerio->id,
+        ]);
+
+        $this->getJson('/api/ministerios/misiones/noticias')
+            ->assertOk()
+            ->assertJsonFragment(['slug' => 'reporte-de-misiones']);
     }
 }
