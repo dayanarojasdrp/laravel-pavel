@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\MensajeContacto;
+use App\Notifications\NuevoMensajeContactoNotification;
 use App\Support\AppliesListFilters;
 use App\Support\ResolvesPagination;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 class MensajeContactoController extends Controller
@@ -34,6 +36,11 @@ class MensajeContactoController extends Controller
         ]);
 
         $mensaje = MensajeContacto::create($validated)->refresh();
+
+        if ($notificationEmail = config('mail.contact_notification_email')) {
+            Notification::route('mail', $notificationEmail)
+                ->notify(new NuevoMensajeContactoNotification($mensaje));
+        }
 
         return response()->json([
             'mensaje' => 'Mensaje recibido',

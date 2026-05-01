@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\MensajeContacto;
 use App\Models\User;
+use App\Notifications\NuevoMensajeContactoNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class MensajeContactoApiTest extends TestCase
@@ -23,6 +25,30 @@ class MensajeContactoApiTest extends TestCase
             'email' => 'persona@example.com',
             'asunto' => 'Necesito informacion',
         ]);
+    }
+
+    public function test_contact_form_is_rate_limited(): void
+    {
+        foreach (range(1, 3) as $attempt) {
+            $this->postJson('/api/contactos', $this->contactPayload([
+                'email' => "persona{$attempt}@example.com",
+            ]))->assertCreated();
+        }
+
+        $this->postJson('/api/contactos', $this->contactPayload([
+            'email' => 'persona4@example.com',
+        ]))->assertTooManyRequests();
+    }
+
+    public function test_contact_message_sends_optional_notification(): void
+    {
+        Notification::fake();
+        config(['mail.contact_notification_email' => 'pastor@example.com']);
+
+        $this->postJson('/api/contactos', $this->contactPayload())
+            ->assertCreated();
+
+        Notification::assertSentOnDemand(NuevoMensajeContactoNotification::class);
     }
 
     public function test_contact_index_requires_authentication(): void
@@ -50,8 +76,13 @@ class MensajeContactoApiTest extends TestCase
 
     public function test_regular_user_cannot_manage_contact_messages(): void
     {
+        $editorToken = User::factory()->create(['role' => 'editor'])->createToken('vue-admin')->plainTextToken;
         $token = User::factory()->create(['role' => 'usuario'])->createToken('vue-admin')->plainTextToken;
         $mensaje = MensajeContacto::create($this->contactPayload());
+
+        $this->withToken($editorToken)
+            ->getJson('/api/contactos')
+            ->assertForbidden();
 
         $this->withToken($token)
             ->getJson('/api/contactos')
