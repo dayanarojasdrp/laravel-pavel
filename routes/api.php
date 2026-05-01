@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BusquedaController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\MensajeContactoController;
 use App\Http\Controllers\MinisterioController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\RecursoController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/buscar', [BusquedaController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
