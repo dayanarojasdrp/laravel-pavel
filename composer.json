@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "dayanarojasdrp/laravel-pavel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Laravel REST API for managing church news, events, ministries, resources, and public communication.",
+    "keywords": ["laravel", "api", "church", "community", "content-management"],
     "license": "MIT",
     "require": {
         "php": "^8.2",
