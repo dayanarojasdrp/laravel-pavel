@@ -23,9 +23,9 @@ class EventoApiTest extends TestCase
             ->assertJsonFragment(['slug' => 'culto-familiar']);
     }
 
-    public function test_pastor_can_create_evento(): void
+    public function test_configured_admin_can_create_evento(): void
     {
-        $token = User::factory()->create(['role' => 'pastor'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/eventos', $this->eventoPayload([
@@ -113,7 +113,7 @@ class EventoApiTest extends TestCase
 
     public function test_fecha_fin_must_be_after_or_equal_fecha_inicio(): void
     {
-        $token = User::factory()->create(['role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/eventos', $this->eventoPayload([

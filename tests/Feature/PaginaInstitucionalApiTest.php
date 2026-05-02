@@ -23,9 +23,9 @@ class PaginaInstitucionalApiTest extends TestCase
             ->assertJsonFragment(['slug' => 'sobre-nosotros']);
     }
 
-    public function test_pastor_can_create_pagina(): void
+    public function test_configured_admin_can_create_pagina(): void
     {
-        $token = User::factory()->create(['role' => 'pastor'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/paginas', $this->paginaPayload([
@@ -107,7 +107,7 @@ class PaginaInstitucionalApiTest extends TestCase
 
     public function test_admin_can_update_pagina(): void
     {
-        $token = User::factory()->create(['role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
         $pagina = PaginaInstitucional::create($this->paginaPayload([
             'titulo' => 'Mision',
             'slug' => 'mision',

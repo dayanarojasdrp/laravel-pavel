@@ -80,9 +80,12 @@ class AuthApiTest extends TestCase
             ->assertJsonStructure(['id', 'name', 'email', 'role']);
     }
 
-    public function test_pastor_can_manage_content(): void
+    public function test_configured_admin_can_manage_content(): void
     {
-        $token = User::factory()->create(['role' => 'pastor'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create([
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+        ])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/ministerios', ['nombre' => 'Jovenes'])
@@ -90,14 +93,21 @@ class AuthApiTest extends TestCase
             ->assertJsonFragment(['nombre' => 'Jovenes']);
     }
 
-    public function test_editor_can_manage_public_content_but_regular_user_cannot(): void
+    public function test_other_roles_cannot_manage_content(): void
     {
+        $pastorToken = User::factory()->create(['role' => 'pastor'])->createToken('vue-admin')->plainTextToken;
         $editorToken = User::factory()->create(['role' => 'editor'])->createToken('vue-admin')->plainTextToken;
         $userToken = User::factory()->create(['role' => 'usuario'])->createToken('vue-admin')->plainTextToken;
 
+        $this->withToken($pastorToken)
+            ->postJson('/api/ministerios', ['nombre' => 'Pastor'])
+            ->assertForbidden();
+
+        $this->app['auth']->forgetGuards();
+
         $this->withToken($editorToken)
             ->postJson('/api/ministerios', ['nombre' => 'Jovenes'])
-            ->assertCreated();
+            ->assertForbidden();
 
         $this->app['auth']->forgetGuards();
 

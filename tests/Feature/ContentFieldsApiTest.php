@@ -16,7 +16,7 @@ class ContentFieldsApiTest extends TestCase
 
     public function test_ministerio_accepts_extended_fields_and_generates_slug(): void
     {
-        $token = User::factory()->create(['role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/ministerios', [
@@ -40,7 +40,7 @@ class ContentFieldsApiTest extends TestCase
 
     public function test_noticia_accepts_publication_fields(): void
     {
-        $token = User::factory()->create(['role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
         $ministerio = Ministerio::create(['nombre' => 'Misiones', 'slug' => 'misiones']);
 
         $this->withToken($token)
@@ -69,7 +69,7 @@ class ContentFieldsApiTest extends TestCase
 
     public function test_recurso_accepts_download_fields(): void
     {
-        $token = User::factory()->create(['role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/recursos', [

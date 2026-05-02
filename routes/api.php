@@ -22,18 +22,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
-    Route::middleware('role:admin,pastor,editor')->group(function () {
+    Route::middleware('admin.owner')->group(function () {
         Route::apiResource('ministerios', MinisterioController::class)->except(['index', 'show']);
         Route::apiResource('noticias', NoticiaController::class)->except(['index', 'show']);
         Route::apiResource('eventos', EventoController::class)->except(['index', 'show']);
         Route::apiResource('misiones', MisioneController::class)->except(['index', 'show']);
         Route::apiResource('recursos', RecursoController::class)->except(['index', 'show']);
+        Route::apiResource('contactos', MensajeContactoController::class)->except(['store']);
         Route::apiResource('paginas', PaginaInstitucionalController::class)->except(['index', 'show']);
         Route::post('/uploads/imagenes', [UploadController::class, 'store']);
-    });
-
-    Route::middleware('role:admin,pastor')->group(function () {
-        Route::apiResource('contactos', MensajeContactoController::class)->except(['store']);
     });
 });
 

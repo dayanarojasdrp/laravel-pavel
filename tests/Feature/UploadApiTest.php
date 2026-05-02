@@ -21,10 +21,10 @@ class UploadApiTest extends TestCase
         ])->assertUnauthorized();
     }
 
-    public function test_pastor_can_upload_image(): void
+    public function test_configured_admin_can_upload_image(): void
     {
         Storage::fake('public');
-        $token = User::factory()->create(['role' => 'pastor'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $response = $this->withToken($token)
             ->postJson('/api/uploads/imagenes', [
@@ -55,7 +55,7 @@ class UploadApiTest extends TestCase
     public function test_upload_rejects_non_images(): void
     {
         Storage::fake('public');
-        $token = User::factory()->create(['role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/uploads/imagenes', [
@@ -68,7 +68,7 @@ class UploadApiTest extends TestCase
     public function test_upload_rejects_images_larger_than_five_mb(): void
     {
         Storage::fake('public');
-        $token = User::factory()->create(['role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
 
         $this->withToken($token)
             ->postJson('/api/uploads/imagenes', [
