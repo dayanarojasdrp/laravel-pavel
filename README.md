@@ -108,8 +108,8 @@ Authentication is required to access protected routes.
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/church-community-api.git
-cd church-community-api
+git clone https://github.com/dayanarojasdrp/laravel-pavel.git
+cd laravel-pavel
 ```
 
 Install dependencies:
