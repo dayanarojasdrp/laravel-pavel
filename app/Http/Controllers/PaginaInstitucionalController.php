@@ -23,7 +23,7 @@ class PaginaInstitucionalController extends Controller
         return $query
             ->orderBy('orden')
             ->orderBy('titulo')
-            ->paginate(ResolvesPagination::perPage($request));
+            ->paginate(ResolvesPagination::perPage($request, 50));
     }
 
     public function store(Request $request)
