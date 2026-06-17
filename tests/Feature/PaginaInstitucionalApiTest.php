@@ -105,6 +105,45 @@ class PaginaInstitucionalApiTest extends TestCase
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_paginas_default_to_fifty_items_for_frontend_sections(): void
+    {
+        foreach (range(1, 12) as $number) {
+            PaginaInstitucional::create($this->paginaPayload([
+                'titulo' => "Seccion {$number}",
+                'slug' => "seccion-{$number}",
+                'seccion' => "inicio-bloque-{$number}",
+                'orden' => $number,
+            ]));
+        }
+
+        $this->getJson('/api/paginas')
+            ->assertOk()
+            ->assertJsonPath('per_page', 50)
+            ->assertJsonPath('total', 12)
+            ->assertJsonCount(12, 'data');
+    }
+
+    public function test_admin_can_create_new_frontend_sections_and_social_links(): void
+    {
+        $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/paginas', $this->paginaPayload([
+                'titulo' => 'Facebook',
+                'slug' => 'social-facebook',
+                'contenido' => 'https://facebook.com/iglesia',
+                'seccion' => 'social-facebook',
+                'meta_title' => 'https://facebook.com/iglesia',
+                'meta_description' => 'Perfil oficial de Facebook.',
+            ]))
+            ->assertCreated()
+            ->assertJsonFragment([
+                'slug' => 'social-facebook',
+                'seccion' => 'social-facebook',
+                'meta_title' => 'https://facebook.com/iglesia',
+            ]);
+    }
+
     public function test_admin_can_update_pagina(): void
     {
         $token = User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin'])->createToken('vue-admin')->plainTextToken;
