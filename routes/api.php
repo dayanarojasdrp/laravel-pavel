@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusquedaController;
 use App\Http\Controllers\EventoController;
@@ -101,5 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
             ->except(['index', 'show']);
 
         Route::post('/uploads/imagenes', [UploadController::class, 'store']);
+
+        Route::get('/trazabilidad', [AuditLogController::class, 'index']);
+        Route::get('/trazabilidad/{id}', [AuditLogController::class, 'show']);
     });
 });
